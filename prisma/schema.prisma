@@ -6,3 +6,62 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Chamados {
+  id  String  @id @default(uuid())
+  titulo String 
+  descricao String?
+  status status @default(Aberto)
+  prioridade prioridade
+  logs Json
+  matriculaUsuario String
+  categoriaId String?
+
+  usuario Usuarios @relation(fields: [matriculaUsuario], references: [matricula])
+  categoria Categorias? @relation(fields: [categoriaId], references: [id])
+
+  comentarios Comentarios[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+enum status{
+  Aberto
+  Resolvendo
+  Fechado
+}
+enum prioridade{
+  Baixa
+  Media
+  Alta
+  Crítica
+}
+
+model Usuarios{
+  matricula  String  @id
+  nome String
+  email String @unique
+  senha String
+  tecnico Boolean @default(false)
+  admin Boolean @default(false)
+
+  chamados Chamados[]
+  comentarios Comentarios[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Categorias{
+  id String @id @default(uuid())
+  nome String
+  chamados Chamados[]
+}
+
+model Comentarios{
+  id String @id @default(uuid())
+  usuarioId String
+  chamadoId String
+
+  chamado Chamados @relation(fields: [chamadoId], references: [id])
+  usuario Usuarios @relation(fields: [usuarioId], references: [matricula])
+}
